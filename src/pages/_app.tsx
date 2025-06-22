@@ -1,4 +1,6 @@
 import "@/styles/globals.css";
+import "@/styles/slider.css";
+
 import { NextComponentType, NextPageContext } from "next";
 import type { AppProps } from "next/app";
 

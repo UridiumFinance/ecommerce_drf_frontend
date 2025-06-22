@@ -4,12 +4,7 @@ import { useState } from "react";
 import NavbarDesktop from "./desktop/NavbarDesktop";
 import NavbarMobile from "./mobile/NavbarMobile";
 
-const navigation = [
-  { name: "Product", href: "#" },
-  { name: "Features", href: "#" },
-  { name: "Marketplace", href: "#" },
-  { name: "Company", href: "#" },
-];
+const navigation = [{ name: "Store", href: "/store" }];
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

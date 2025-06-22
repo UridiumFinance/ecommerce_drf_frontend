@@ -35,13 +35,13 @@ export default function NavbarDesktop({ navigation, setMobileMenuOpen }: Compone
       </div>
       <div className="hidden lg:flex lg:gap-x-12">
         {navigation.map(item => (
-          <a
+          <Link
             key={item.name}
             href={item.href}
             className="text-color-heading text-sm/6 font-semibold"
           >
             {item.name}
-          </a>
+          </Link>
         ))}
       </div>
       <div className="flex flex-1 items-center justify-end gap-x-6">
