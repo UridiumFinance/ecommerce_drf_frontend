@@ -1,7 +1,13 @@
 import IBenefit from "./IBenefit";
+import { ICategory } from "./ICategory";
+import IColor from "./IColor";
 import IDetail from "./IDetail";
+import IFlavor from "./IFlavor";
+import IMaterial from "./IMaterial";
 import IRequisite from "./IRequisite";
+import ISize from "./ISize";
 import ITargetAudience from "./ITargetAudience";
+import IWeight from "./IWeight";
 
 export interface IProductList {
   id: string;
@@ -17,6 +23,15 @@ export interface IProductList {
   stock: number;
   limited_edition: boolean;
   condition: string;
+  average_rating: number;
+  review_count: number;
+  category: ICategory;
+  min_price: number;
+  sizes: ISize[];
+  weights: IWeight[];
+  colors: IColor[];
+  flavors: IFlavor[];
+  materials: IMaterial[];
 }
 
 export default interface IProduct {
@@ -34,6 +49,10 @@ export default interface IProduct {
   keywords: string;
   slug: string;
   price: number;
+  price_with_all_attributes: number;
+  price_with_selected: number;
+  total_attributes_price: number;
+
   compare_price: number;
   discount: boolean;
   discount_until: string;
@@ -48,4 +67,12 @@ export default interface IProduct {
   created_at: string;
   updated_at: string;
   images: string[];
+  average_rating: number;
+  review_count: number;
+  category: ICategory;
+  sizes: ISize[];
+  weights: IWeight[];
+  colors: IColor[];
+  flavors: IFlavor[];
+  materials: IMaterial[];
 }

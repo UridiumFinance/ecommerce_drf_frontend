@@ -1,6 +1,7 @@
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 import LoadingMoon from "@/components/loaders/LoadingMoon";
+import SEO, { SEOProps } from "@/components/pages/SEO";
 import { ToastError } from "@/components/toast/alerts";
 import Layout from "@/hocs/Layout";
 import usePasswordValidation from "@/hooks/usePasswordValidation";
@@ -11,6 +12,19 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { UnknownAction } from "redux";
 import { ThunkDispatch } from "redux-thunk";
+
+const SEOList: SEOProps = {
+  title: "Establecer nueva contraseña | SoloPython",
+  description:
+    "Ingresa una nueva contraseña para tu cuenta en SoloPython y continúa con tus cursos de Python de forma segura.",
+  keywords: "nueva contraseña, cambiar contraseña, restablecer contraseña, SoloPython",
+  href: "/forgot-password-confirm",
+  robots: "noindex, nofollow",
+  author: "SoloPython",
+  publisher: process.env.DOMAIN_NAME || "solopython.com",
+  image: "/assets/img/thumbnails/default_thumbnail.jpg",
+  twitterHandle: "@solopython",
+};
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -57,6 +71,7 @@ export default function Page() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <SEO {...SEOList} />
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
           Change your password

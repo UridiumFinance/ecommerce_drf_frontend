@@ -2,10 +2,11 @@ import buildQueryString from "@/utils/buildQueryString";
 
 export interface FetchProductsProps {
   p: number;
-  page_size: number;
-  search?: string;
+  page_size: number | undefined;
+  search?: string | string[];
   sorting?: string;
   ordering?: string;
+  categories?: string[];
 }
 
 export default async function fetchProducts(props: FetchProductsProps) {

@@ -8,7 +8,6 @@ import {
   IResendActivationProps,
   IForgotPasswordProps,
   IForgotPasswordConfirmProps,
-  ISendOTPLogin,
 } from "./interfaces";
 
 import {
@@ -28,13 +27,12 @@ import {
   LOAD_PROFILE_SUCCESS,
   LOAD_USER_SUCCESS,
   LOAD_USER_FAIL,
-  SEND_OTP_LOGIN_SUCCESS,
-  SEND_OTP_LOGIN_FAIL,
   LOGOUT,
 } from "./types";
 
 import { ThunkDispatch } from "redux-thunk";
 import { RootState } from "@/redux/reducers";
+import { syncCart } from "../cart/actions";
 
 export const register = (props: IRegisterProps) => async (dispatch: Dispatch) => {
   try {
@@ -298,6 +296,8 @@ export const login =
         });
         await dispatch(loadUser());
         await dispatch(loadProfile());
+        await dispatch(syncCart());
+
         ToastSuccess("Login successfull!");
       } else {
         dispatch({

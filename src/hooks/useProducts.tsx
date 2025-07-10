@@ -6,9 +6,16 @@ import { useCallback, useEffect, useState } from "react";
 interface ComponentProps {
   searchBy?: string;
   pageSize?: number;
+  categories?: string[];
+  fetchOnMount?: boolean;
 }
 
-export default function useProducts({ searchBy, pageSize }: ComponentProps) {
+export default function useProducts({
+  searchBy,
+  pageSize,
+  categories,
+  fetchOnMount = true,
+}: ComponentProps) {
   const [products, setProducts] = useState<IProductList[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
@@ -22,6 +29,11 @@ export default function useProducts({ searchBy, pageSize }: ComponentProps) {
 
   const listProducts = useCallback(
     async (page: number, search: string | undefined) => {
+      if (!fetchOnMount && !searchByString.trim()) {
+        // No disparamos al montar si fetchOnMount=false y no hay búsqueda
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -31,6 +43,7 @@ export default function useProducts({ searchBy, pageSize }: ComponentProps) {
           search,
           sorting,
           ordering,
+          categories,
         };
 
         const res = await fetchProducts(fetchProductsData);
@@ -46,7 +59,7 @@ export default function useProducts({ searchBy, pageSize }: ComponentProps) {
         setLoading(false);
       }
     },
-    [pageSizeState, ordering, sorting],
+    [pageSizeState, ordering, sorting, categories, fetchOnMount],
   );
 
   useEffect(() => {
@@ -76,6 +89,7 @@ export default function useProducts({ searchBy, pageSize }: ComponentProps) {
 
         const fetchProductsData: FetchProductsProps = {
           ...params,
+          categories,
         };
 
         const res = await fetchProducts(fetchProductsData);
@@ -109,7 +123,9 @@ export default function useProducts({ searchBy, pageSize }: ComponentProps) {
     setOrdering,
     setSorting,
     setSearchBy,
+    setProducts,
     loadMore,
+    listProducts,
     onSubmitSearch,
   };
 }

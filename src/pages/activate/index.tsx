@@ -1,5 +1,6 @@
 import Button from "@/components/Button";
 import LoadingMoon from "@/components/loaders/LoadingMoon";
+import SEO, { SEOProps } from "@/components/pages/SEO";
 import { ToastError } from "@/components/toast/alerts";
 import Layout from "@/hocs/Layout";
 import { activate } from "@/redux/actions/auth/actions";
@@ -10,6 +11,19 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { UnknownAction } from "redux";
 import { ThunkDispatch } from "redux-thunk";
+
+const SEOList: SEOProps = {
+  title: "Activación de cuenta | SoloPython",
+  description:
+    "Activa tu cuenta en SoloPython y accede a todos los cursos y recursos para aprender programación en Python.",
+  keywords: "activar cuenta, confirmación de email, SoloPython, aprender Python",
+  href: "/activate",
+  robots: "noindex, nofollow",
+  author: "SoloPython",
+  publisher: process.env.DOMAIN_NAME || "solopython.com",
+  image: "/assets/img/thumbnails/default_thumbnail.jpg",
+  twitterHandle: "@solopython",
+};
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -45,6 +59,7 @@ export default function Page() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <SEO {...SEOList} />
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
           Activate your account

@@ -1,8 +1,9 @@
+import SEO, { SEOProps } from "@/components/pages/SEO";
+import Layout from "@/hocs/Layout";
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 import LoadingMoon from "@/components/loaders/LoadingMoon";
 import { ToastError, ToastSuccess } from "@/components/toast/alerts";
-import Layout from "@/hocs/Layout";
 import { loadProfile, loadUser, setLoginSuccess } from "@/redux/actions/auth/actions";
 import { SendOTPEmail, SendOTPEmailProps } from "@/utils/api/auth/SendOTPEmail";
 import verifyOTPLogin, { SendVerifyOTPLoginProps } from "@/utils/api/auth/VerifyOTPLogin";
@@ -12,6 +13,20 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { UnknownAction } from "redux";
 import { ThunkDispatch } from "redux-thunk";
+import { syncCart } from "@/redux/actions/cart/actions";
+
+const SEOList: SEOProps = {
+  title: "Iniciar sesión en SoloPython",
+  description:
+    "Accede a tu cuenta en SoloPython para continuar aprendiendo programación en Python con tus cursos y recursos favoritos.",
+  keywords: "login, iniciar sesión, acceso, cuenta SoloPython, aprender Python",
+  href: "/login",
+  robots: "noindex, nofollow",
+  author: "SoloPython",
+  publisher: process.env.DOMAIN_NAME || "solopython.com",
+  image: "/assets/img/thumbnails/default_thumbnail.jpg",
+  twitterHandle: "@solopython",
+};
 
 export default function Page() {
   const [email, setEmail] = useState<string>("");
@@ -33,6 +48,7 @@ export default function Page() {
       const res = await SendOTPEmail(sendOTPEmailData);
       if (res.status === 200) {
         setStep(2);
+        ToastSuccess("We have sent you an email with your otp code.");
       } else {
         setEmail("");
       }
@@ -60,6 +76,7 @@ export default function Page() {
       if (res.status === 200) {
         await dispatch(loadProfile());
         await dispatch(loadUser());
+        await dispatch(syncCart());
         await dispatch(setLoginSuccess());
         ToastSuccess("Login successfull.");
         router.push("/");
@@ -76,6 +93,7 @@ export default function Page() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <SEO {...SEOList} />
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
           Sign in to your account
