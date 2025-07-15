@@ -26,7 +26,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         Authorization: `JWT ${accessToken}`,
         "API-Key": `${process.env.BACKEND_API_KEY}`,
       },
-      body: JSON.stringify(req.body),
     });
 
     const data = await apiRes.json();

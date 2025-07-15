@@ -17,8 +17,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  const { cart_item_id, count } = req.body;
+
   try {
-    const apiRes = await fetch(`${process.env.API_URL}/api/cart/update/`, {
+    const apiRes = await fetch(`${process.env.API_URL}/api/cart/items/update/${cart_item_id}/`, {
       method: "PATCH",
       headers: {
         Accept: "application/json",
@@ -26,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         Authorization: `JWT ${accessToken}`,
         "API-Key": `${process.env.BACKEND_API_KEY}`,
       },
-      body: JSON.stringify(req.body),
+      body: JSON.stringify({ count }),
     });
 
     const data = await apiRes.json();

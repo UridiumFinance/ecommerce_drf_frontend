@@ -22,17 +22,22 @@ import { useDispatch, useSelector } from "react-redux";
 import { addToCart, addToCartAnonymous } from "@/redux/actions/cart/actions";
 import { ThunkDispatch } from "redux-thunk";
 import { UnknownAction } from "redux";
-import { addToWishlistAnonymous } from "@/redux/actions/wishlist/actions";
+import { addToWishlist, addToWishlistAnonymous } from "@/redux/actions/wishlist/actions";
 import AttributeSelector from "@/components/pages/products/AttributeSelector";
 import useProductPrice from "@/hooks/useProductPrice";
 import { ToastError, ToastWarning } from "@/components/toast/alerts";
-import { AddToCartProps } from "@/redux/actions/cart/interfaces";
 import LoadingMoon from "@/components/loaders/LoadingMoon";
 import ISize from "@/interfaces/products/ISize";
 import IWeight from "@/interfaces/products/IWeight";
 import IMaterial from "@/interfaces/products/IMaterial";
 import IFlavor from "@/interfaces/products/IFlavor";
 import IColor from "@/interfaces/products/IColor";
+import { AddToCartAnonymousProps, AddToCartProps } from "@/redux/actions/cart/interfaces";
+import LoadingBar from "@/components/loaders/LoadingBar";
+import {
+  AddToWishlistAnonymousProps,
+  AddToWishlistProps,
+} from "@/redux/actions/wishlist/interfaces";
 
 export const getServerSideProps: GetServerSideProps<{
   product: IProduct | null;
@@ -160,134 +165,137 @@ export default function Page({
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const dispatch: ThunkDispatch<any, any, UnknownAction> = useDispatch();
-  const cartItems = useSelector((state: RootState) => state.cart.items);
 
   const [loadingAddToCart, setLoadingAddToCart] = useState<boolean>(false);
   const [quantity, setQuantity] = useState<number>(1);
   const handleAddToCart = async () => {
-    // // 1) Determinamos stock disponible según variante o producto
-    // let availableStock = product.stock; // stock general si no hay variante
-    // if (selectedSize) {
-    //   const variant = product.sizes.find(s => s.id === selectedSize);
-    //   availableStock = variant?.stock ?? 0;
-    // } else if (selectedWeight) {
-    //   const variant = product.weights.find(w => w.id === selectedWeight);
-    //   availableStock = variant?.stock ?? 0;
-    // } else if (selectedMaterial) {
-    //   const variant = product.materials.find(m => m.id === selectedMaterial);
-    //   availableStock = variant?.stock ?? 0;
-    // } else if (selectedColor) {
-    //   const variant = product.colors.find(c => c.id === selectedColor);
-    //   availableStock = variant?.stock ?? 0;
-    // } else if (selectedFlavor) {
-    //   const variant = product.flavors.find(f => f.id === selectedFlavor);
-    //   availableStock = variant?.stock ?? 0;
-    // }
+    // 1) Validar variantes: existencia de selección y stock suficiente
+    const variantChecks: {
+      name: string;
+      list: { id: string; stock?: number }[] | undefined;
+      selected: { id: string; stock?: number } | null;
+    }[] = [
+      { name: "color", list: product?.colors, selected: selectedColor },
+      { name: "size", list: product?.sizes, selected: selectedSize },
+      { name: "material", list: product?.materials, selected: selectedMaterial },
+      { name: "weight", list: product?.weights, selected: selectedWeight },
+      { name: "flavor", list: product?.flavors, selected: selectedFlavor },
+    ];
 
-    // // 2) Obtenemos count actual en carrito de esa misma variante
-    // const existing = cartItems.find(
-    //   ci =>
-    //     ci.item_id === product.id &&
-    //     ci.item_type === "product" &&
-    //     ci.size === selectedSize &&
-    //     ci.weight === selectedWeight &&
-    //     ci.material === selectedMaterial &&
-    //     ci.color === selectedColor &&
-    //     ci.flavor === selectedFlavor,
-    // );
-    // const currentCount = existing?.count ?? 0;
+    for (const { name, list, selected } of variantChecks) {
+      if (list?.length) {
+        // 1.a) Debe haber una selección
+        if (!selected) {
+          ToastError(`Por favor, selecciona una variante de ${name}.`);
+          return;
+        }
+        // 1.b) Verificar stock de la variante
+        const available = selected.stock ?? 0;
+        if (available < quantity) {
+          ToastError(`Lo siento, solo quedan ${available} unidades de la variante de ${name}.`);
+          return;
+        }
+      }
+    }
 
-    // // 3) Validamos que haya al menos 1 unidad restante
-    // if (currentCount + 1 > (availableStock ?? 0)) {
-    //   ToastError("No hay suficiente stock para esa variante.");
-    //   return;
-    // }
+    // 2) Si no hay variantes en absoluto, comprobar stock general
+    const hasAnyVariants =
+      product?.colors?.length ||
+      product?.sizes?.length ||
+      product?.materials?.length ||
+      product?.weights?.length ||
+      product?.flavors?.length;
 
-    const addToCartData: AddToCartProps = {
-      item: product,
-      item_type: "product",
-      count: quantity,
-      size: selectedSize,
-      weight: selectedWeight,
-      material: selectedMaterial,
-      color: selectedColor,
-      flavor: selectedFlavor,
-    };
+    if (!hasAnyVariants) {
+      const generalStock = product?.stock ?? 0;
+      if (generalStock < quantity) {
+        ToastError("Lo siento, este producto está agotado.");
+        return;
+      }
+    }
 
     try {
       setLoadingAddToCart(true);
       if (isAuthenticated) {
-        ToastWarning("Add to cart auth");
+        const addToCartData: AddToCartProps = {
+          content_type: "product",
+          object_id: product?.id || "",
+          count: quantity,
+          size_id: selectedSize?.id,
+          weight_id: selectedWeight?.id,
+          material_id: selectedMaterial?.id,
+          color_id: selectedColor?.id,
+          flavor_id: selectedFlavor?.id,
+          // coupon_code
+        };
+        await dispatch(addToCart(addToCartData));
       } else {
-        await dispatch(addToCartAnonymous(addToCartData));
+        const addToCartDataAnonymous: AddToCartAnonymousProps = {
+          item: product,
+          content_type: "product",
+          object_id: product?.id || "",
+          count: quantity,
+          size: selectedSize,
+          weight: selectedWeight,
+          material: selectedMaterial,
+          color: selectedColor,
+          flavor: selectedFlavor,
+        };
+
+        await dispatch(addToCartAnonymous(addToCartDataAnonymous));
       }
     } catch (err) {
       ToastError(`Error adding product to cart: ${err}`);
     } finally {
       setLoadingAddToCart(false);
     }
-
-    // if (isAuthenticated) {
-    //   try {
-    //     setLoadingAddToCart(true);
-    //     const addToCartData: AddToCartProps = {
-    //       item_id: product?.id,
-    //       item_type: "product",
-    //       count: quantity,
-    //       size: selectedSize,
-    //       weight: selectedWeight,
-    //       material: selectedMaterial,
-    //       color: selectedColor,
-    //       flavor: selectedFlavor,
-    //     };
-    //     await dispatch(addToCart(addToCartData));
-    //   } catch (e) {
-    //     ToastError(`Error adding to cart: ${e}`);
-    //   } finally {
-    //     setLoadingAddToCart(false);
-    //   }
-    //   return;
-    // }
-    // try {
-    //   setLoadingAddToCart(true);
-    //   const addToCartData: AddToCartProps = {
-    //     item_id: product?.id,
-    //     item_type: "product",
-    //     count: quantity,
-    //     size: selectedSize,
-    //     weight: selectedWeight,
-    //     material: selectedMaterial,
-    //     color: selectedColor,
-    //     flavor: selectedFlavor,
-    //   };
-    //   await dispatch(addToCartAnonymous(addToCartData));
-    // } catch (e) {
-    //   ToastError(`Error adding to cart: ${e}`);
-    // } finally {
-    //   setLoadingAddToCart(false);
-    // }
   };
 
+  const [loadingAddToWishlist, setLoadingAddToWishlist] = useState<boolean>(false);
   const handleAddToWishlist = async () => {
-    if (isAuthenticated) {
-      console.log("Add to wishlist backend");
-    } else {
-      dispatch(
-        addToWishlistAnonymous({
-          item_id: product?.id,
-          item_type: "product",
-          count: 1,
-          size: null,
-          weight: null,
-          material: null,
-          color: null,
-          flavor: null,
-        }),
-      );
+    try {
+      setLoadingAddToWishlist(true);
+      if (isAuthenticated) {
+        const addToWishlistData: AddToWishlistProps = {
+          content_type: "product",
+          object_id: product?.id || "",
+          count: quantity,
+          size_id: selectedSize?.id,
+          weight_id: selectedWeight?.id,
+          material_id: selectedMaterial?.id,
+          color_id: selectedColor?.id,
+          flavor_id: selectedFlavor?.id,
+          // coupon_code
+        };
+        await dispatch(addToWishlist(addToWishlistData));
+      } else {
+        const addToWishlistDataAnonymous: AddToWishlistAnonymousProps = {
+          item: product,
+          content_type: "product",
+          object_id: product?.id || "",
+          count: quantity,
+          size: selectedSize,
+          weight: selectedWeight,
+          material: selectedMaterial,
+          color: selectedColor,
+          flavor: selectedFlavor,
+        };
+
+        await dispatch(addToWishlistAnonymous(addToWishlistDataAnonymous));
+      }
+    } catch (err) {
+      ToastError("error adding item to wishlist");
+    } finally {
+      setLoadingAddToWishlist(false);
     }
   };
 
-  const { basePrice, discountPrice, loading } = useProductPrice({
+  const {
+    originalPrice,
+    salePrice,
+    isDiscountActive,
+    loading: loadingPrice,
+  } = useProductPrice({
     slug: product?.slug,
     colorId: selectedColor?.id,
     sizeId: selectedSize?.id,
@@ -295,17 +303,6 @@ export default function Page({
     weightId: selectedWeight?.id,
     flavorId: selectedFlavor?.id,
   });
-
-  // ¿Sigue vigente el descuento?
-  const isDiscountActive = useMemo(() => {
-    if (!product?.discount || !product.discount_until) return false;
-    const now = new Date();
-    const until = new Date(product.discount_until);
-    return until > now;
-  }, [product?.discount, product?.discount_until]);
-
-  // Mostramos descuento sólo si el API nos devolvió un discountPrice menor
-  const showDiscount = isDiscountActive && discountPrice < basePrice;
 
   return (
     <>
@@ -325,32 +322,27 @@ export default function Page({
               <div className="mt-3">
                 <h2 className="sr-only">Product information</h2>
 
-                {showDiscount && (
+                {isDiscountActive && originalPrice != null && salePrice < originalPrice && (
                   <div className="w-full pb-2">
                     <Clock time={product?.discount_until!} />
                   </div>
                 )}
 
-                {showDiscount ? (
+                {loadingPrice ? (
+                  <LoadingBar width="w-24" height="h-8" />
+                ) : isDiscountActive && originalPrice != null && salePrice < originalPrice ? (
                   <div className="flex items-center space-x-4">
-                    {/* Precio original tachado */}
                     <p className="text-3xl tracking-tight text-gray-500 line-through">
-                      $ {basePrice.toFixed(2)}
+                      ${originalPrice.toFixed(2)}
                     </p>
-
-                    {/* Precio con descuento */}
-                    <p className="text-3xl tracking-tight text-gray-900">
-                      $ {discountPrice.toFixed(2)}
-                    </p>
-
-                    {/* Badge de porcentaje */}
+                    <p className="text-xl tracking-tight text-gray-900">${salePrice.toFixed(2)}</p>
                     <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/10 ring-inset">
-                      {Math.round(((basePrice - discountPrice) / basePrice) * 100)}% off
+                      {Math.round(((originalPrice - salePrice) / originalPrice) * 100)}% off
                     </span>
                   </div>
                 ) : (
-                  // Precio normal sin descuento
-                  <p className="text-3xl tracking-tight text-gray-900">$ {basePrice.toFixed(2)}</p>
+                  /* **SIN** “Precio anterior” cuando no hay descuento */
+                  <p className="text-3xl tracking-tight text-gray-900">${salePrice.toFixed(2)}</p>
                 )}
               </div>
 
@@ -486,7 +478,7 @@ export default function Page({
                     type="button"
                     onClick={handleAddToCart}
                     disabled={loadingAddToCart}
-                    className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-none sm:w-full"
+                    className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-black px-8 py-3 text-base font-medium text-white hover:bg-gray-800 focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-none sm:w-full"
                   >
                     {loadingAddToCart ? <LoadingMoon /> : "Add to cart"}
                   </button>
@@ -496,7 +488,12 @@ export default function Page({
                     onClick={handleAddToWishlist}
                     className="ml-4 flex items-center justify-center rounded-md px-3 py-3 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
                   >
-                    <HeartIcon aria-hidden="true" className="size-6 shrink-0" />
+                    {loadingAddToWishlist ? (
+                      <LoadingMoon />
+                    ) : (
+                      <HeartIcon aria-hidden="true" className="size-6 shrink-0" />
+                    )}
+
                     <span className="sr-only">Add to favorites</span>
                   </button>
                 </div>

@@ -11,6 +11,12 @@ interface Props {
   flavorId?: string | null;
 }
 
+interface PriceResult {
+  price: number; // precio actual (con o sin descuento)
+  compare_price: number; // precio original (siempre viene)
+  discount_active: boolean; // si el descuento aún está activo
+}
+
 export default function useProductPrice({
   slug,
   colorId,
@@ -19,15 +25,17 @@ export default function useProductPrice({
   weightId,
   flavorId,
 }: Props) {
-  const [basePrice, setBasePrice] = useState<number>(0);
-  const [discountPrice, setDiscountPrice] = useState<number>(0);
+  const [originalPrice, setOriginalPrice] = useState<number | null>(null);
+  const [salePrice, setSalePrice] = useState<number>(0);
+  const [isDiscountActive, setIsDiscountActive] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
   const getPrice = useCallback(async () => {
-    try {
-      setLoading(true);
+    if (!slug) return;
+    setLoading(true);
 
-      const fetchProductPriceData: FetchProductPriceProps = {
+    try {
+      const params: FetchProductPriceProps = {
         slug,
         color_id: colorId,
         size_id: sizeId,
@@ -35,12 +43,13 @@ export default function useProductPrice({
         weight_id: weightId,
         flavor_id: flavorId,
       };
+      const res = await fetchProductPrice(params);
 
-      const res = await fetchProductPrice(fetchProductPriceData);
-
-      if (res.status === 200) {
-        setBasePrice(res.results.compare_price);
-        setDiscountPrice(res.results.price);
+      if (res.status === 200 && res.results) {
+        const data = res.results as PriceResult;
+        setOriginalPrice(data.compare_price);
+        setSalePrice(data.price);
+        setIsDiscountActive(data.discount_active);
       }
     } catch (e) {
       ToastError(`Error fetching product price: ${e}`);
@@ -53,5 +62,10 @@ export default function useProductPrice({
     getPrice();
   }, [getPrice]);
 
-  return { basePrice, discountPrice, loading };
+  return {
+    originalPrice,
+    salePrice,
+    isDiscountActive,
+    loading,
+  };
 }

@@ -10,10 +10,14 @@ import verifyOTPLogin, { SendVerifyOTPLoginProps } from "@/utils/api/auth/Verify
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { UnknownAction } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 import { syncCart } from "@/redux/actions/cart/actions";
+import { RootState } from "@/redux/reducers";
+import { SyncCartPayload } from "@/redux/actions/cart/interfaces";
+import { SyncWishlistPayload } from "@/redux/actions/wishlist/interfaces";
+import { syncWishlist } from "@/redux/actions/wishlist/actions";
 
 const SEOList: SEOProps = {
   title: "Iniciar sesión en SoloPython",
@@ -29,6 +33,8 @@ const SEOList: SEOProps = {
 };
 
 export default function Page() {
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
   const [email, setEmail] = useState<string>("");
   const [otp, setOTP] = useState<string>("");
 
@@ -76,7 +82,38 @@ export default function Page() {
       if (res.status === 200) {
         await dispatch(loadProfile());
         await dispatch(loadUser());
-        await dispatch(syncCart());
+        const syncCartpayload: SyncCartPayload = {
+          items: cartItems.map(ci => {
+            const item: any = {
+              content_type: ci.content_type,
+              item_id: ci.object_id,
+              count: ci.count,
+            };
+            if (ci.size) item.size_id = ci.size.id;
+            if (ci.weight) item.weight_id = ci.weight.id;
+            if (ci.material) item.material_id = ci.material.id;
+            if (ci.color) item.color_id = ci.color.id;
+            if (ci.flavor) item.flavor_id = ci.flavor.id;
+            return item;
+          }),
+        };
+        dispatch(syncCart(syncCartpayload));
+        const syncWishlistpayload: SyncWishlistPayload = {
+          items: wishlistItems.map(wi => {
+            const item: any = {
+              content_type: wi.content_type,
+              item_id: wi.object_id,
+              count: wi.count,
+            };
+            if (wi.size) item.size_id = wi.size.id;
+            if (wi.weight) item.weight_id = wi.weight.id;
+            if (wi.material) item.material_id = wi.material.id;
+            if (wi.color) item.color_id = wi.color.id;
+            if (wi.flavor) item.flavor_id = wi.flavor.id;
+            return item;
+          }),
+        };
+        dispatch(syncWishlist(syncWishlistpayload));
         await dispatch(setLoginSuccess());
         ToastSuccess("Login successfull.");
         router.push("/");

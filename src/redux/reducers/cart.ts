@@ -6,6 +6,8 @@ import {
   CLEAR_CART_SUCCESS,
   GET_TOTAL_SUCCESS,
   GET_TOTAL_FAIL,
+  SYNC_CART_SUCCESS,
+  LIST_ITEMS_SUCCESS,
 } from "../actions/cart/types";
 
 type Action = {
@@ -35,6 +37,30 @@ export default function cartReducer(state: State = initialState, action: Action)
   const { type, payload } = action;
 
   switch (type) {
+    case LIST_ITEMS_SUCCESS: {
+      const { cart, totalItems } = payload as {
+        cart: CartItem[];
+        totalItems: number;
+      };
+
+      return {
+        ...state,
+        items: cart,
+        totalItems,
+      };
+    }
+    case SYNC_CART_SUCCESS: {
+      const { cart, totalItems } = payload as {
+        cart: CartItem[];
+        totalItems: number;
+      };
+
+      return {
+        ...state,
+        items: cart,
+        totalItems,
+      };
+    }
     case ADD_ITEM_SUCCESS: {
       const { cart, totalItems } = payload as {
         cart: CartItem[];
@@ -82,7 +108,6 @@ export default function cartReducer(state: State = initialState, action: Action)
         totalItems,
       };
     }
-
     case GET_TOTAL_SUCCESS: {
       const { subtotal, taxRate, taxAmount, total } = payload as {
         subtotal: number;
@@ -99,14 +124,12 @@ export default function cartReducer(state: State = initialState, action: Action)
         error: undefined,
       };
     }
-
     case GET_TOTAL_FAIL: {
       return {
         ...state,
         error: payload.error,
       };
     }
-
     default:
       return state;
   }

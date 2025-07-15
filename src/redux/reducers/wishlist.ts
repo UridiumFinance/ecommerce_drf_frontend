@@ -3,6 +3,9 @@ import {
   ADD_WISHLIST_ITEM_SUCCESS,
   EMPTY_WISHLIST_SUCCESS,
   REMOVE_WISHLIST_ITEM_SUCCESS,
+  UPDATE_WISHLIST_ITEM_SUCCESS,
+  LIST_WISHLIST_ITEMS_SUCCESS,
+  SYNC_WISHLIST_SUCCESS,
 } from "../actions/wishlist/types";
 
 type Action = {
@@ -32,7 +35,31 @@ export default function wishlistReducer(state: State = initialState, action: Act
   const { type, payload } = action;
 
   switch (type) {
+    case LIST_WISHLIST_ITEMS_SUCCESS: {
+      const { wishlist, totalItems } = payload as {
+        wishlist: WishlistItem[];
+        totalItems: number;
+      };
+
+      return {
+        ...state,
+        items: wishlist,
+        totalItems,
+      };
+    }
     case ADD_WISHLIST_ITEM_SUCCESS: {
+      const { wishlist, totalItems } = payload as {
+        wishlist: WishlistItem[];
+        totalItems: number;
+      };
+
+      return {
+        ...state,
+        items: wishlist,
+        totalItems,
+      };
+    }
+    case SYNC_WISHLIST_SUCCESS: {
       const { wishlist, totalItems } = payload as {
         wishlist: WishlistItem[];
         totalItems: number;
@@ -57,6 +84,18 @@ export default function wishlistReducer(state: State = initialState, action: Act
       };
     }
     case EMPTY_WISHLIST_SUCCESS: {
+      const { wishlist, totalItems } = payload as {
+        wishlist: WishlistItem[];
+        totalItems: number;
+      };
+
+      return {
+        ...state,
+        items: wishlist,
+        totalItems,
+      };
+    }
+    case UPDATE_WISHLIST_ITEM_SUCCESS: {
       const { wishlist, totalItems } = payload as {
         wishlist: WishlistItem[];
         totalItems: number;

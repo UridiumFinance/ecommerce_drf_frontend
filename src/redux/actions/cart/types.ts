@@ -1,3 +1,6 @@
+export const LIST_ITEMS_SUCCESS = "LIST_ITEMS_SUCCESS";
+export const LIST_ITEMS_FAIL = "LIST_ITEMS_FAIL";
+
 export const ADD_ITEM_SUCCESS = "ADD_ITEM_SUCCESS";
 export const ADD_ITEM_FAIL = "ADD_ITEM_FAIL";
 

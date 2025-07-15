@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const apiRes = await fetch(`${process.env.API_URL}/api/cart/add/`, {
+    const apiRes = await fetch(`${process.env.API_URL}/api/cart/items/`, {
       method: "POST",
       headers: {
         Accept: "application/json",

@@ -20,66 +20,75 @@ export default function ProductCard({ product }: ComponentProps) {
   const dispatch: ThunkDispatch<any, any, UnknownAction> = useDispatch();
 
   // Helper para elegir el atributo más barato y en stock
-  const pickCheapest = <T extends { id: string; price: number; stock?: number }>(
-    arr: T[] | undefined,
+  const pickCheapest = <T extends { id: string; price: number; stock: number }>(
+    arr?: T[],
   ): string | null => {
-    if (!arr || arr.length === 0) return null;
-    const available = arr.filter(a => (a.stock ?? 0) > 0);
-    if (available.length === 0) return null;
+    if (!arr?.length) return null;
+    // Sólo las que tengan stock > 0
+    const available = arr.filter(a => a.stock > 0);
+    if (!available.length) return null;
+    // Ordenar por precio ascendente
     available.sort((a, b) => a.price - b.price);
     return available[0].id;
   };
 
   const [loadingAddToCart, setLoadingAddToCart] = useState<boolean>(false);
   const handleAddToCart = async () => {
-    // 1) Selección automática de la variante más barata (filtra stock > 0)
+    // 1) IDs de la variante más barata
     const colorId = pickCheapest(product?.colors);
     const sizeId = pickCheapest(product?.sizes);
     const materialId = pickCheapest(product?.materials);
     const weightId = pickCheapest(product?.weights);
     const flavorId = pickCheapest(product?.flavors);
 
-    // 2) Validamos que SI existe variantes para ese tipo, entonces haya stock
-    const checks: Array<[string, any[], string | null]> = [
-      ["color", product?.colors || [], colorId],
-      ["size", product?.sizes || [], sizeId],
-      ["material", product?.materials || [], materialId],
-      ["weight", product?.weights || [], weightId],
-      ["flavor", product?.flavors || [], flavorId],
+    // 2) Validar que si existe lista, haya stock
+    const checks: [string, any[] | undefined, string | null][] = [
+      ["color", product?.colors, colorId],
+      ["size", product?.sizes, sizeId],
+      ["material", product?.materials, materialId],
+      ["weight", product?.weights, weightId],
+      ["flavor", product?.flavors, flavorId],
     ];
 
     for (const [name, list, id] of checks) {
-      if (list.length > 0 && id === null) {
+      if (list?.length && id === null) {
         ToastError(`Lo siento, no hay unidades disponibles de la variante más barata de ${name}.`);
         return;
       }
     }
 
-    // 3) Si no hay atributos en absoluto, comprobamos stock general
+    // 3) Si no hay variante alguna, compruebo stock general
     if (
-      !product?.colors?.length &&
-      !product?.sizes?.length &&
-      !product?.materials?.length &&
-      !product?.weights?.length &&
-      !product?.flavors?.length &&
+      !(
+        product?.colors?.length ||
+        product?.sizes?.length ||
+        product?.materials?.length ||
+        product?.weights?.length ||
+        product?.flavors?.length
+      ) &&
       (product?.stock ?? 0) < 1
     ) {
       ToastError("Lo siento, este producto está agotado.");
       return;
     }
 
-    // 4) Ya podemos despachar con seguridad
-    const addToCartData: AddToCartProps = {
-      item_id: product?.id,
-      item_type: "product",
+    // 4) Construir payload sin campos undefined/null
+    const body: Record<string, unknown> = {
+      content_type: "product",
+      object_id: product!.id,
       count: 1,
-      size: sizeId,
-      weight: weightId,
-      material: materialId,
-      color: colorId,
-      flavor: flavorId,
+      item: product,
     };
+    if (colorId) body.color_id = colorId;
+    if (sizeId) body.size_id = sizeId;
+    if (materialId) body.material_id = materialId;
+    if (weightId) body.weight_id = weightId;
+    if (flavorId) body.flavor_id = flavorId;
+    // coupon_code también podrías añadirlo aquí si lo tienes
 
+    const addToCartData = body as AddToCartProps;
+
+    // 5) Disparar la acción adecuada
     try {
       setLoadingAddToCart(true);
       if (isAuthenticated) {
