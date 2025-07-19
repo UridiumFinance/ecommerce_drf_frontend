@@ -2,6 +2,7 @@ import { logout } from "@/redux/actions/auth/actions";
 import { RootState } from "@/redux/reducers";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { UnknownAction } from "redux";
@@ -42,28 +43,20 @@ export default function AuthLinks() {
         </div>
         <div className="py-1">
           <MenuItem>
-            <a
-              href="#"
+            <Link
+              href="/profile"
               className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
             >
-              Account settings
-            </a>
+              Your Account
+            </Link>
           </MenuItem>
           <MenuItem>
-            <a
-              href="#"
+            <Link
+              href="/profile/orders"
               className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
             >
-              Support
-            </a>
-          </MenuItem>
-          <MenuItem>
-            <a
-              href="#"
-              className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900 data-[focus]:outline-none"
-            >
-              License
-            </a>
+              Orders
+            </Link>
           </MenuItem>
         </div>
         <div className="py-1">

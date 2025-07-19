@@ -1,33 +1,37 @@
 import classNames from "@/utils/classnames";
 import { StarIcon } from "@heroicons/react/20/solid";
+import useReviews from "@/hooks/reviews/useReviews";
 import ReviewsList from "./ReviewsList";
+import StandardPagination from "../pagination/StandardPagination";
 
-const reviews = {
-  average: 4,
-  totalCount: 1624,
-  counts: [
-    { rating: 5, count: 1019 },
-    { rating: 4, count: 162 },
-    { rating: 3, count: 97 },
-    { rating: 2, count: 199 },
-    { rating: 1, count: 147 },
-  ],
-  featured: [
-    {
-      id: 1,
-      rating: 5,
-      content: `
-        <p>This is the bag of my dreams. I took it on my last vacation and was able to fit an absurd amount of snacks for the many long and hungry flights.</p>
-      `,
-      author: "Emily Selman",
-      avatarSrc:
-        "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80",
-    },
-    // More reviews...
-  ],
-};
+interface ComponentProps {
+  contentType: string;
+  objectId: string | undefined;
+}
 
-export default function Reviews() {
+export default function Reviews({ contentType, objectId }: ComponentProps) {
+  const {
+    review,
+    reviews,
+    average,
+    counts,
+    totalCount,
+    loadingReviews,
+    count,
+    pageSize,
+    currentPage,
+    setCurrentPage,
+  } = useReviews({
+    contentType,
+    objectId,
+    fetchListOnLoad: true,
+    fetchReviewOnLoad: true,
+  });
+
+  console.log("count", count);
+  console.log("pageSize", pageSize);
+  console.log("currentPage", currentPage);
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-2xl py-16 lg:grid lg:max-w-7xl lg:grid-cols-12 lg:gap-x-8">
@@ -42,22 +46,22 @@ export default function Reviews() {
                     key={rating}
                     aria-hidden="true"
                     className={classNames(
-                      reviews.average > rating ? "text-yellow-400" : "text-gray-300",
+                      average > rating ? "text-yellow-400" : "text-gray-300",
                       "size-5 shrink-0",
                     )}
                   />
                 ))}
               </div>
-              <p className="sr-only">{reviews.average} out of 5 stars</p>
+              <p className="sr-only">{average} out of 5 stars</p>
             </div>
-            <p className="ml-2 text-sm text-gray-900">Based on {reviews.totalCount} reviews</p>
+            <p className="ml-2 text-sm text-gray-900">Based on {totalCount} reviews</p>
           </div>
 
           <div className="mt-6">
             <h3 className="sr-only">Review data</h3>
 
             <dl className="space-y-3">
-              {reviews.counts.map(count => (
+              {counts?.map(count => (
                 <div key={count.rating} className="flex items-center text-sm">
                   <dt className="flex flex-1 items-center">
                     <p className="w-3 font-medium text-gray-900">
@@ -77,7 +81,7 @@ export default function Reviews() {
                         <div className="h-3 rounded-full border border-gray-200 bg-gray-100" />
                         {count.count > 0 ? (
                           <div
-                            style={{ width: `calc(${count.count} / ${reviews.totalCount} * 100%)` }}
+                            style={{ width: `calc(${count.count} / ${totalCount} * 100%)` }}
                             className="absolute inset-y-0 rounded-full border border-yellow-400 bg-yellow-400"
                           />
                         ) : null}
@@ -85,14 +89,14 @@ export default function Reviews() {
                     </div>
                   </dt>
                   <dd className="ml-3 w-10 text-right text-sm text-gray-900 tabular-nums">
-                    {Math.round((count.count / reviews.totalCount) * 100)}%
+                    {Math.round((count.count / totalCount) * 100)}%
                   </dd>
                 </div>
               ))}
             </dl>
           </div>
 
-          <div className="mt-10">
+          {/* <div className="mt-10">
             <h3 className="text-lg font-medium text-gray-900">Share your thoughts</h3>
             <p className="mt-1 text-sm text-gray-600">
               If you’ve used this product, share your thoughts with other customers
@@ -104,13 +108,20 @@ export default function Reviews() {
             >
               Write a review
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-16 lg:col-span-7 lg:col-start-6 lg:mt-0">
           <h3 className="sr-only">Recent reviews</h3>
 
           <ReviewsList reviews={reviews} />
+          <StandardPagination
+            data={reviews}
+            count={count}
+            pageSize={pageSize}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
         </div>
       </div>
     </div>

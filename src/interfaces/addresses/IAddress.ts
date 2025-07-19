@@ -8,4 +8,5 @@ export interface IAddress {
   postal_code: string;
   country: string;
   is_default: string;
+  apartment: string;
 }

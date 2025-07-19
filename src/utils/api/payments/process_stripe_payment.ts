@@ -1,8 +1,5 @@
-import { ToastError } from "@/components/toast/alerts";
-
 export interface ProcessStripePaymentProps {
-  method: string;
-  data: Record<string, any>;
+  payment_method_id: string;
 }
 
 export async function processStripePayment(props: ProcessStripePaymentProps) {
@@ -16,9 +13,9 @@ export async function processStripePayment(props: ProcessStripePaymentProps) {
     });
 
     const data = await res.json();
-    return { status: res.status, ...data };
+    return data;
   } catch (err) {
-    ToastError("Error creating stripe payment");
+    console.log(`Error creating stripe payment: ${err}`);
     return null;
   }
 }

@@ -19,11 +19,16 @@ import { PersistGate } from "redux-persist/integration/react";
 import { useEffect } from "react";
 import Router from "next/router";
 
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+
 export type NextLayoutComponentType<P = {}> = NextComponentType<NextPageContext, any, P> & {
   getLayout?: (page: React.ReactNode) => React.ReactNode;
 };
 
 NProgress.configure({ showSpinner: false });
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY!);
 
 export default function App({ Component, pageProps }: AppProps) {
   const getLayout =
@@ -58,10 +63,12 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={(store as any).persistor}>
-        <ThemeProvider enableSystem defaultTheme="system" attribute="class">
-          {getLayout(<Component {...props} />)}
-          <ToastContainer className="bottom-0" position="bottom-right" />
-        </ThemeProvider>
+        <Elements stripe={stripePromise}>
+          <ThemeProvider enableSystem defaultTheme="system" attribute="class">
+            {getLayout(<Component {...props} />)}
+            <ToastContainer className="bottom-0" position="bottom-right" />
+          </ThemeProvider>
+        </Elements>
       </PersistGate>
     </Provider>
   );

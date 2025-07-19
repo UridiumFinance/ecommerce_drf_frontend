@@ -1,22 +1,22 @@
-import React from "react";
-import { CardElement } from "@stripe/react-stripe-js";
-
-export interface SelectPaymentProps {
-  method: string;
-  onMethodChange: (method: string) => void;
-  onCardChange?: (complete: boolean) => void;
+export interface PaymentMethod {
+  id: string;
+  title: string;
+  disabled: boolean;
 }
 
-const paymentMethods = [
-  { id: "creditCard", title: "Credit Card", disabled: false },
-  { id: "paypal", title: "Paypal", disabled: true },
-  { id: "mercadoPago", title: "Mercado Pago", disabled: true },
-];
+export interface SelectPaymentProps {
+  /** id del método actualmente seleccionado */
+  method: string;
+  /** callback para notificar al padre el cambio de método */
+  onMethodChange: (method: string) => void;
+  /** lista completa de métodos disponibles */
+  paymentMethods: PaymentMethod[];
+}
 
 export default function SelectPayment({
   method,
   onMethodChange,
-  onCardChange,
+  paymentMethods,
 }: SelectPaymentProps) {
   return (
     <section aria-labelledby="payment-heading">
@@ -24,39 +24,26 @@ export default function SelectPayment({
         Payment details
       </h2>
 
-      {/* 1) Selector de método */}
+      {/* Selector de método */}
       <fieldset>
-        <legend className="sr-only">Selecciona método de pago</legend>
-        <div className="mt-6 flex space-x-10">
+        <div className="mt-6 space-y-6 sm:flex sm:items-center sm:space-y-0 sm:space-x-10">
           {paymentMethods.map(m => (
-            <label key={m.id} className="inline-flex items-center">
+            <div key={m.id} className="flex items-center">
               <input
-                type="radio"
-                name="payment-method"
-                value={m.id}
                 checked={method === m.id}
+                name="payment-method"
+                type="radio"
                 onChange={() => onMethodChange(m.id)}
                 disabled={m.disabled}
-                className="size-4 rounded-full border border-gray-300 checked:bg-indigo-600"
+                className="relative size-4 appearance-none rounded-full border border-gray-300 bg-white before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:before:bg-gray-400 forced-colors:appearance-auto forced-colors:before:hidden [&:not(:checked)]:before:hidden"
               />
-              <span className="ml-2 text-sm font-medium text-gray-900">{m.title}</span>
-            </label>
+              <label htmlFor={m.id} className="ml-3 block text-sm/6 font-medium text-gray-900">
+                {m.title}
+              </label>
+            </div>
           ))}
         </div>
       </fieldset>
-
-      {/* 2) Si eligió tarjeta, montamos el CardElement */}
-      {method === "creditCard" && (
-        <div className="mt-8">
-          <label className="mb-1 block text-sm font-medium text-gray-700">Card details</label>
-          <div className="rounded-md border border-gray-300 bg-white px-3 py-2">
-            <CardElement
-              options={{ hidePostalCode: true }}
-              onChange={e => onCardChange?.(e.complete)}
-            />
-          </div>
-        </div>
-      )}
     </section>
   );
 }

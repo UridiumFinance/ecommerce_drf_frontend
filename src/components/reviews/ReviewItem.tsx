@@ -9,9 +9,13 @@ export default function ReviewItem({ review }: ReviewItemProps) {
   return (
     <div key={review.id} className="py-12">
       <div className="flex items-center">
-        <img alt={`${review.author}.`} src={review.avatarSrc} className="size-12 rounded-full" />
+        <img
+          alt={`${review.author}.`}
+          src={review.user.profile_picture.url}
+          className="size-12 rounded-full"
+        />
         <div className="ml-4">
-          <h4 className="text-sm font-bold text-gray-900">{review.author}</h4>
+          <h4 className="text-sm font-bold text-gray-900">{review.user.username}</h4>
           <div className="mt-1 flex items-center">
             {[0, 1, 2, 3, 4].map(rating => (
               <StarIcon
@@ -25,6 +29,7 @@ export default function ReviewItem({ review }: ReviewItemProps) {
             ))}
           </div>
           <p className="sr-only">{review.rating} out of 5 stars</p>
+          <p className="prose mt-2 text-gray-500">{review.body}</p>
         </div>
       </div>
 

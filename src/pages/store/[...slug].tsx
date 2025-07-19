@@ -303,12 +303,11 @@ export default function Page({
     weightId: selectedWeight?.id,
     flavorId: selectedFlavor?.id,
   });
-
   return (
     <>
       <SEO {...SEOList} />
       <div className="w-full bg-white">
-        <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:max-w-7xl lg:px-8">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
             <div className="lg:sticky lg:top-2">
               {/* Image gallery */}
@@ -540,7 +539,7 @@ export default function Page({
               width="w-full"
               titles={["Reviews", "Benefits", "Requisites", "Target Audience"]}
               panels={[
-                <Reviews key={1} />,
+                <Reviews key={1} contentType="product" objectId={product?.id} />,
                 <div key={2}>{benefitsPanel}</div>,
                 <div key={3}>{requisitesPanel}</div>,
                 <div key={4}>{audiencePanel}</div>,
