@@ -1,5 +1,7 @@
-import Button from "@/components/Button";
+import EmailForm from "@/components/cta/EmailForm";
 import DarkModeButton from "@/components/DarkModeButton";
+import { BookOpenIcon, PhoneIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 const navigation = {
   solutions: [
@@ -21,15 +23,15 @@ const navigation = {
     { name: "Press", href: "#" },
   ],
   legal: [
-    { name: "Terms of service", href: "#" },
-    { name: "Privacy policy", href: "#" },
+    { name: "Terms of service", href: "/terms" },
+    { name: "Privacy policy", href: "/terms/privacy" },
     { name: "License", href: "#" },
   ],
   social: [
     {
       name: "Facebook",
       href: "#",
-      icon: props => (
+      icon: (props: any) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <path
             fillRule="evenodd"
@@ -42,7 +44,7 @@ const navigation = {
     {
       name: "Instagram",
       href: "#",
-      icon: props => (
+      icon: (props: any) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <path
             fillRule="evenodd"
@@ -55,7 +57,7 @@ const navigation = {
     {
       name: "X",
       href: "#",
-      icon: props => (
+      icon: (props: any) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <path d="M13.6823 10.6218L20.2391 3H18.6854L12.9921 9.61788L8.44486 3H3.2002L10.0765 13.0074L3.2002 21H4.75404L10.7663 14.0113L15.5685 21H20.8131L13.6819 10.6218H13.6823ZM11.5541 13.0956L10.8574 12.0991L5.31391 4.16971H7.70053L12.1742 10.5689L12.8709 11.5655L18.6861 19.8835H16.2995L11.5541 13.096V13.0956Z" />
         </svg>
@@ -64,7 +66,7 @@ const navigation = {
     {
       name: "GitHub",
       href: "#",
-      icon: props => (
+      icon: (props: any) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <path
             fillRule="evenodd"
@@ -77,7 +79,7 @@ const navigation = {
     {
       name: "YouTube",
       href: "#",
-      icon: props => (
+      icon: (props: any) => (
         <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <path
             fillRule="evenodd"
@@ -99,30 +101,30 @@ export default function Footer() {
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
                 <h3 className="text-color-heading text-sm/6 font-semibold">Solutions</h3>
-                <ul role="list" className="mt-6 space-y-4">
+                <ul className="mt-6 space-y-4">
                   {navigation.solutions.map(item => (
                     <li key={item.name}>
-                      <a
+                      <Link
                         href={item.href}
                         className="text-color-text hover:text-color-hover text-sm/6"
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="mt-10 md:mt-0">
                 <h3 className="text-color-heading text-sm/6 font-semibold">Support</h3>
-                <ul role="list" className="mt-6 space-y-4">
+                <ul className="mt-6 space-y-4">
                   {navigation.support.map(item => (
                     <li key={item.name}>
-                      <a
+                      <Link
                         href={item.href}
                         className="text-color-text hover:text-color-hover text-sm/6"
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -131,30 +133,30 @@ export default function Footer() {
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
                 <h3 className="text-color-heading text-sm/6 font-semibold">Company</h3>
-                <ul role="list" className="mt-6 space-y-4">
+                <ul className="mt-6 space-y-4">
                   {navigation.company.map(item => (
                     <li key={item.name}>
-                      <a
+                      <Link
                         href={item.href}
                         className="text-color-text hover:text-color-hover text-sm/6"
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="mt-10 md:mt-0">
                 <h3 className="text-color-heading text-sm/6 font-semibold">Legal</h3>
-                <ul role="list" className="mt-6 space-y-4">
+                <ul className="mt-6 space-y-4">
                   {navigation.legal.map(item => (
                     <li key={item.name}>
-                      <a
+                      <Link
                         href={item.href}
                         className="text-color-text hover:text-color-hover text-sm/6"
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -168,23 +170,10 @@ export default function Footer() {
             <p className="text-color-text mt-2 text-sm/6">
               The latest news, articles, and resources, sent to your inbox weekly.
             </p>
-            <form className="mt-6 sm:flex sm:max-w-md">
-              <input
-                id="email-address"
-                name="email-address"
-                type="email"
-                required
-                placeholder="Enter your email"
-                autoComplete="email"
-                className="outline-color-border placeholder:text-color-subtext focus:outline-color-secondary text-color-text w-full min-w-0 rounded-md px-3 py-1.5 text-base outline outline-1 -outline-offset-1 focus:outline focus:outline-2 focus:-outline-offset-2 sm:w-64 sm:text-sm/6 xl:w-full"
-              />
-              <div className="mt-4 sm:mt-0 sm:ml-4 sm:shrink-0">
-                <Button>Subscribe</Button>
-              </div>
-            </form>
+            <EmailForm />
           </div>
         </div>
-        <div className="mt-16 border-t border-gray-900/10 pt-8 sm:mt-20 md:flex md:items-center md:justify-between lg:mt-24">
+        <div className="mt-16 mb-8 border-t border-gray-900/10 pt-8 sm:mt-20 md:flex md:items-center md:justify-between lg:mt-24">
           <div className="flex gap-x-6 md:order-2">
             <DarkModeButton />
             {navigation.social.map(item => (
@@ -201,6 +190,51 @@ export default function Footer() {
           <p className="text-color-text mt-8 text-sm/6 md:order-1 md:mt-0">
             &copy; 2024 Your Company, Inc. All rights reserved.
           </p>
+        </div>
+        <div className="border-t border-gray-200 pt-4">
+          <div className="flex items-center">
+            <div className="flex items-center space-x-2">
+              <Link href="/complaints" className="group block flex-shrink-0">
+                <div className="flex items-center">
+                  <div className="rounded-full border border-white bg-white p-0.5">
+                    <div className="rounded-full border border-indigo-500 bg-indigo-100 p-1">
+                      <BookOpenIcon className="h-5 w-auto text-indigo-700" />
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-bold text-gray-500 group-hover:text-indigo-700">
+                      Book of
+                    </p>
+                    <p className="text-sm font-bold text-gray-500 group-hover:text-indigo-700">
+                      Complaints
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            <div className="mx-4 h-12 border-l border-indigo-200" />
+
+            <div className="flex items-center space-x-2">
+              <Link href="/contact" className="group block flex-shrink-0">
+                <div className="flex items-center">
+                  <div className="rounded-full border border-white bg-white p-0.5">
+                    <div className="rounded-full border border-indigo-500 bg-indigo-100 p-1">
+                      <PhoneIcon className="h-5 w-auto text-indigo-700" />
+                    </div>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-bold text-gray-500 group-hover:text-indigo-700">
+                      Contact us
+                    </p>
+                    <p className="text-xs text-gray-500 group-hover:text-indigo-700 md:text-sm">
+                      Tell us anything you want
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

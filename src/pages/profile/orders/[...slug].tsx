@@ -3,48 +3,9 @@ import SEO, { SEOProps } from "@/components/pages/SEO";
 import ProfileLayout from "@/hocs/ProfileLayout";
 import { Order } from "@/interfaces/orders/IOrder";
 import { GetServerSideProps, GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
-import Image from "next/image";
-import Link from "next/link";
-
-const products = [
-  {
-    id: 1,
-    name: "Nomad Tumbler",
-    description:
-      "This durable and portable insulated tumbler will keep your beverage at the perfect temperature during your next adventure.",
-    href: "#",
-    price: "35.00",
-    status: "Preparing to ship",
-    step: 1,
-    date: "March 24, 2021",
-    datetime: "2021-03-24",
-    address: ["Floyd Miles", "7363 Cynthia Pass", "Toronto, ON N3Y 4H8"],
-    email: "f•••@example.com",
-    phone: "1•••••••••40",
-    imageSrc:
-      "https://tailwindcss.com/plus-assets/img/ecommerce-images/confirmation-page-03-product-01.jpg",
-    imageAlt: "Insulated bottle with white base and black snap lid.",
-  },
-  {
-    id: 2,
-    name: "Minimalist Wristwatch",
-    description:
-      "This contemporary wristwatch has a clean, minimalist look and high quality components.",
-    href: "#",
-    price: "149.00",
-    status: "Shipped",
-    step: 0,
-    date: "March 23, 2021",
-    datetime: "2021-03-23",
-    address: ["Floyd Miles", "7363 Cynthia Pass", "Toronto, ON N3Y 4H8"],
-    email: "f•••@example.com",
-    phone: "1•••••••••40",
-    imageSrc:
-      "https://tailwindcss.com/plus-assets/img/ecommerce-images/confirmation-page-03-product-02.jpg",
-    imageAlt:
-      "Arm modeling wristwatch with black leather band, white watch face, thin watch hands, and fine time markings.",
-  },
-];
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useState } from "react";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
@@ -94,6 +55,9 @@ export const getServerSideProps: GetServerSideProps<{
   };
 };
 
+type OrderStatus = "pending" | "paid" | "shipped" | "delivered" | "canceled";
+const steps = ["Pedido realizado", "Pago recibido", "Enviado", "Entregado"];
+
 export default function Page({ order }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const SEOList: SEOProps = {
     title: `Orden ${order?.id.slice(0, 8)}… | SoloPython`,
@@ -125,33 +89,38 @@ export default function Page({ order }: InferGetServerSidePropsType<typeof getSe
     });
   }
 
-  const STATUS_LABELS = {
+  // Updated labels
+  const STATUS_LABELS: Record<OrderStatus, string> = {
     pending: "Pendiente de pago",
     paid: "Pagada",
-    fulfilled: "Enviada / Entregada",
+    shipped: "Enviada",
+    delivered: "Entregada",
     canceled: "Cancelada",
   };
+  const statusLabel = STATUS_LABELS[order.status];
 
-  // Mapeo de status a step (0..3)
-  const STEP_MAP = {
-    pending: 0, // sólo “Pedido realizado”
-    paid: 1, // Pago recibido
-    fulfilled: 3, // deja activas “Enviado” y “Entregado”
+  // Single mapping to step index
+  const statusToStepIndex: Record<OrderStatus, number> = {
+    pending: 0,
+    paid: 1,
+    shipped: 2,
+    delivered: 3,
+    canceled: 0,
   };
-  // 1. Etiqueta legible
-  const statusLabel = STATUS_LABELS[order.status] || order.status;
+  const step = statusToStepIndex[order.status];
+  const last = steps.length - 1;
+  const widthPercent = (step / last) * 100;
 
-  // 2. Cálculo de step para la barra
-  const step = STEP_MAP[order.status] ?? 0;
-
-  // 3. Formato de fecha
-  const dateObj = new Date(order?.created_at);
-  const dateTime = dateObj.toISOString().split("T")[0]; // YYYY‑MM‑DD
+  // Dates
+  const dateObj = new Date(order.updated_at);
+  const dateTime = dateObj.toISOString().split("T")[0];
   const displayDate = dateObj.toLocaleDateString("es-PE", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
+
+  const [open, setOpen] = useState(false);
 
   return (
     <div>
@@ -163,15 +132,28 @@ export default function Page({ order }: InferGetServerSidePropsType<typeof getSe
               Order #{order?.id?.slice(0, 8)}
             </h1>
           </div>
-          <p className="text-sm text-gray-600">
-            Order placed{" "}
-            <time
-              dateTime={order?.created_at && new Date(order.created_at).toISOString().split("T")[0]}
-              className="font-medium text-gray-900"
-            >
-              {order?.created_at ? formatDate(order.created_at) : "—"}
-            </time>
-          </p>
+          <div className="flex items-center space-x-2">
+            {order.tracking_number && (
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="text-sm font-medium text-indigo-600 hover:underline"
+              >
+                Track Order
+              </button>
+            )}
+            <p className="text-sm text-gray-600">
+              Order placed{" "}
+              <time
+                dateTime={
+                  order?.created_at && new Date(order.created_at).toISOString().split("T")[0]
+                }
+                className="font-medium text-gray-900"
+              >
+                {order?.created_at ? formatDate(order.created_at) : "—"}
+              </time>
+            </p>
+          </div>
         </div>
 
         {/* Products */}
@@ -194,26 +176,27 @@ export default function Page({ order }: InferGetServerSidePropsType<typeof getSe
           {/* Sólo mostramos progreso si NO está cancelado */}
           {order.status !== "canceled" && (
             <div aria-hidden="true" className="mt-6">
-              {/* Barra de progreso */}
-              <div className="overflow-hidden rounded-full bg-gray-200">
+              {/* Progress bar */}
+              <div className="h-2 overflow-hidden rounded-full bg-gray-200">
                 <div
-                  style={{ width: `calc((${step} * 2 + 1) / 8 * 100%)` }}
-                  className="h-2 rounded-full bg-indigo-600"
+                  className="h-2 rounded-full bg-indigo-600 transition-all duration-300"
+                  style={{ width: `${widthPercent}%` }}
                 />
               </div>
 
-              {/* Pasos (visible en pantallas sm en adelante) */}
+              {/* Steps */}
               <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-gray-600 sm:grid">
-                <div className="text-indigo-600">Pedido realizado</div>
-                <div className={classNames(step > 0 ? "text-indigo-600" : "", "text-center")}>
-                  Pago recibido
-                </div>
-                <div className={classNames(step > 1 ? "text-indigo-600" : "", "text-center")}>
-                  Enviado
-                </div>
-                <div className={classNames(step > 2 ? "text-indigo-600" : "", "text-right")}>
-                  Entregado
-                </div>
+                {steps.map((label, idx) => (
+                  <div
+                    key={label}
+                    className={classNames(
+                      idx <= step ? "text-indigo-600" : "",
+                      idx === 0 ? "text-left" : idx === last ? "text-right" : "text-center",
+                    )}
+                  >
+                    {label}
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -275,6 +258,59 @@ export default function Page({ order }: InferGetServerSidePropsType<typeof getSe
           </div>
         </div>
       </div>
+      <Dialog open={open} onClose={setOpen} className="relative z-10">
+        <div className="fixed inset-0" />
+
+        <div className="fixed inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+              <DialogPanel
+                transition
+                className="pointer-events-auto w-screen max-w-md transform transition duration-500 ease-in-out data-[closed]:translate-x-full sm:duration-700"
+              >
+                <div className="flex h-full flex-col overflow-y-auto bg-white py-6 shadow-xl">
+                  <div className="px-4 sm:px-6">
+                    <div className="flex items-start justify-between">
+                      <DialogTitle className="text-base font-semibold text-gray-900">
+                        Información de seguimiento
+                      </DialogTitle>
+                      <div className="ml-3 flex h-7 items-center">
+                        <button
+                          type="button"
+                          onClick={() => setOpen(false)}
+                          className="relative rounded-md bg-white text-gray-400 hover:text-gray-500 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:outline-none"
+                        >
+                          <span className="absolute -inset-2.5" />
+                          <span className="sr-only">Cerrar panel</span>
+                          <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative mt-6 flex-1 px-4 sm:px-6">
+                    {/* Contenido de tracking */}
+                    <p className="text-sm text-gray-700">
+                      <strong>Número de seguimiento:</strong>{" "}
+                      <span className="font-medium">{order.tracking_number}</span>
+                    </p>
+                    {order.tracking_url && (
+                      <a
+                        href={order.tracking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-block text-sm text-indigo-600 hover:underline"
+                      >
+                        Ver en sitio del transportista
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </DialogPanel>
+            </div>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }

@@ -1,4 +1,6 @@
-interface ComponentProps {
+import React from "react";
+
+interface EditNumberProps {
   data: string;
   setData: (value: string) => void;
   required?: boolean;
@@ -9,35 +11,41 @@ interface ComponentProps {
   description?: string;
 }
 
-export default function EditEmail({
+export default function EditNumber({
   data,
   setData,
   required = false,
   disabled = false,
-  maxTextLength = 120,
+  maxTextLength = 20,
   placeholder = "",
   title = "",
   description = "",
-}: ComponentProps) {
+}: EditNumberProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let inputValue = e.target.value;
-
-    inputValue = inputValue
-      .replace(/<script.*?>.*?<\/script>/gi, "") // Remover script tags
-      .replace(/<\/?[^>]+(>|$)/g, "") // Remover HTML tags
-      .replace(/[;:"!]/g, ""); // Remueve ; : " !
-
+    // Permitir sólo dígitos, espacios, guiones y signo + al inicio
+    // Primero quitamos todo lo que no sea dígito, espacio, guión o +
+    inputValue = inputValue.replace(/[^0-9+\-\s]/g, "");
+    // Asegurarnos de que sólo haya un '+' y sea al principio
+    if ((inputValue.match(/\+/g) || []).length > 1) {
+      inputValue = inputValue.replace(/\+/g, "");
+      inputValue = "+" + inputValue;
+    }
     setData(inputValue);
   };
 
   return (
     <div>
-      <span className="dark:text-dark-txt block text-sm font-bold text-gray-900">{title}</span>
-      <span className="dark:text-dark-txt-secondary mb-2 block text-sm text-gray-500">
-        {description}
-      </span>
+      {title && (
+        <span className="dark:text-dark-txt block text-sm font-bold text-gray-900">{title}</span>
+      )}
+      {description && (
+        <span className="dark:text-dark-txt-secondary mb-2 block text-sm text-gray-500">
+          {description}
+        </span>
+      )}
       <input
-        type="email"
+        type="tel"
         required={required}
         disabled={disabled}
         placeholder={placeholder}
@@ -50,11 +58,10 @@ export default function EditEmail({
   );
 }
 
-EditEmail.defaultProps = {
+EditNumber.defaultProps = {
   required: false,
   disabled: false,
-  maxTextLength: 120,
-  showMaxTextLength: false,
+  maxTextLength: 20,
   placeholder: "",
   title: "",
   description: "",
